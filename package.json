@@ -5,6 +5,10 @@
   "scripts": {
     "start": "babel ./src/ -d ./lib/"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:vicwang163/babel-plugin-react-perf.git"
+  },
   "keywords": [
     "babel-plugin",
     "react",
