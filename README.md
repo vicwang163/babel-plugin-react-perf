@@ -21,3 +21,7 @@ npm install --save babel-plugin-react-perf
   ]
 }
 ```
+
+## react-addons-perf
+
+version of react-addons-perf should matches version of react and react-dom

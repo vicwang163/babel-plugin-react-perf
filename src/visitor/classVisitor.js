@@ -4,6 +4,7 @@
 * github: https://github.com/vicwang163
 */
 const ignoreMethods = ['constructor', 'render', 'componentWillMount', 'componentDidMount', 'componentWillUpdate', 'componentDidUpdate', 'componentWillReceiveProps', 'componentWillUnmount', 'shouldComponentUpdate']
+const setFlag = new Set()
 
 function getWastedExpression (path, t) {
   let nodes = []
@@ -153,6 +154,10 @@ function addPerfResult (path, state) {
 module.exports = {
   ClassMethod (path, state) {
     let method = path.node.key.name
+    if (setFlag.has(path.node)) {
+      return
+    }
+    setFlag.add(path.node)
     if (ignoreMethods.includes(method)) {
       return
     } else {
