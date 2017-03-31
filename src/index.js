@@ -12,6 +12,11 @@ function importPerfClass (path, types) {
   let importDefaultSpecifier = types.importDefaultSpecifier(identifier);
   let importDeclaration = types.importDeclaration([importDefaultSpecifier],types.stringLiteral('react-addons-perf'));
   nodes.push(importDeclaration)
+  // add perf log
+  identifier = types.identifier('perfLog')
+  importDefaultSpecifier = types.importDefaultSpecifier(identifier);
+  importDeclaration = types.importDeclaration([importDefaultSpecifier],types.stringLiteral('babel-plugin-react-perf/lib/log.js'));
+  nodes.push(importDeclaration)
   path.insertAfter(nodes)
 }
 
