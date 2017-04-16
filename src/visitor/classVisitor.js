@@ -3,6 +3,7 @@
 * author: vic.wang
 * github: https://github.com/vicwang163
 */
+require('colors')
 const ignoreMethods = ['constructor', 'render', 'componentWillMount', 'componentDidMount', 'componentWillUpdate', 'componentDidUpdate', 'componentWillReceiveProps', 'componentWillUnmount', 'shouldComponentUpdate']
 const setFlag = new Set()
 
@@ -21,6 +22,25 @@ function addPerfResult (path, state) {
   path.insertAfter(nodes)
 }
 
+function renderCheck (path, state) {
+  let elementCount = 0
+  path.traverse({
+    JSXOpeningElement (path) {
+      if (/^[^A-Z]+$/.test(path.node.name.name)) {
+        elementCount ++
+      }
+    }
+  })
+  let maxRenderElements = state.opts.maxRenderElements ? state.opts.maxRenderElements : 50
+  if (elementCount > maxRenderElements) {
+    let opts = path.hub.file.opts
+    let filepath = opts.filename.replace(opts.moduleRoot, '')
+    let message = `${filepath}: render has ${elementCount} elements (maxRenderElements = ${maxRenderElements})\n`
+    console.log('********************react perf warning********************\n'.bold.yellow)
+    console.log(message.yellow.bold)
+  }  
+}
+
 module.exports = {
   ClassMethod (path, state) {
     let method = path.node.key.name
@@ -28,11 +48,43 @@ module.exports = {
       return
     }
     setFlag.add(path.node)
-    if (ignoreMethods.includes(method)) {
-      return
-    } else {
+    // check illegal use for react method
+    path.traverse({
+      // check illegal use like 'this.state.xxx = xxx'
+      AssignmentExpression (path) {
+        if (['constructor'].includes(method)) {
+          return
+        }
+        path.traverse({
+          MemberExpression (path) {
+            let node = path.node
+            if (node.property.name === 'state' && node.object.type === 'ThisExpression' && path.parentPath.parentKey === 'left') {
+              throw path.buildCodeFrameError('Do not assign value to `state` directly');
+            }
+          }
+        })
+      }
+    })
+    
+    // check these methods if they are using `this.setState`
+    if (['constructor', 'componentWillMount'].includes(method)) {
+      path.traverse({
+        MemberExpression (path) {
+          let node = path.node
+          if (node.property.name === 'setState' && node.object.type === 'ThisExpression') {
+            throw path.buildCodeFrameError('Please use `this.state` in the constructor ');
+          }
+        }
+      })
+    }
+    
+    // check render function
+    if (method === 'render') {
+      renderCheck(path, state)
+    }
+    // only add perf check for non-lifecycle method
+    if (!ignoreMethods.includes(method)) {
       let hasAdded = false
-      debugger
       path.traverse({
         Statement (p, s) {
           if (p.type === 'BlockStatement' || hasAdded) {

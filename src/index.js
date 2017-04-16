@@ -4,6 +4,7 @@
 * github: https://github.com/vicwang163
 */
 let classVisitor = require('./visitor/classVisitor')
+let projectPath = require('path').join(__dirname, '..', '..', '..')
 
 function importPerfClass (path, types) {
   let nodes = []
@@ -43,6 +44,14 @@ module.exports = function(babel) {
           })
           if (needAddPerf) {
             importPerfClass(path, t)
+          }
+        },
+        Program (path, state) {
+          if (!state.opts.reportDir) {
+            state.opts.reportDir = './'
+          } else if (!state.opts.init) {
+            state.opts.init = true
+            state.opts.reportDir = require('path').join(projectPath, state.opts.reportDir)
           }
         }
       }
