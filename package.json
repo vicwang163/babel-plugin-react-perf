@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-react-perf",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "author": "vic.wang",
   "scripts": {
     "start": "babel ./src/ -d ./lib/"
