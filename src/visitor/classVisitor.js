@@ -63,6 +63,24 @@ module.exports = {
             }
           }
         })
+      },
+      ExpressionStatement (path) {
+        let invalidStatements = []
+        let file
+        let code
+        try {
+          file = path.hub.file.code
+          code = file.slice(path.node.start, path.node.end)
+          invalidStatements = state.opts.invalidStatements
+        } catch (e){
+          console.log(e)
+        }
+        for (let i = 0; i < invalidStatements.length; i++) {
+          let reg = new RegExp(invalidStatements[i])
+          if (reg.test(code)) {
+            throw path.buildCodeFrameError(`Invalid Statement is checked by '${invalidStatements[i]}'`);
+          }
+        }
       }
     })
     

@@ -20,7 +20,10 @@ npm install --save babel-plugin-react-perf
         "maxRenderElements": 50,
         "needAddPerfRule": {
           "superClass": ["Component"]
-        }
+        },
+        "invalidStatements": [
+          "this.refs.\\w+.value\\s*=\\s*\\S+"
+        ]
       }
     ]
   ]
@@ -42,6 +45,7 @@ superClass表示父类，一般情况下，好多react组件都继承`Component`
 ## 编译阶段分析
 1. 不能使用`this.state.xxx = xxx`的语句
 2. 在componentWillMount,constructor里面使用`this.setState`,可以吧state写在constructor里面 `this.state= {}`
+3. 通过invalidStatements数组的配置，可以让用户自己配置不允许的代码
 
 ## 运行阶段分析
 利用'react-addons-perf'插件进行自动注入分析
